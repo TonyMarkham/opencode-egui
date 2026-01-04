@@ -6,3 +6,6 @@ target/
 
 # API keys (never commit!)
 .env
+
+# IntelliJ
+.idea/*
