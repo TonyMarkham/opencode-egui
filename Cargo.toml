@@ -1,0 +1,66 @@
+[package]
+name = "opencode-egui"
+version = "0.0.1"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+# GUI
+eframe = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
+egui = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers" }
+egui_extras = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers", features = [
+    "image",
+    "svg",
+] }
+egui_commonmark = { git = "https://github.com/TonyMarkham/egui_commonmark.git", branch = "feature/use-fork-of-egui" }
+egui-twemoji = { git = "https://github.com/TonyMarkham/egui-twemoji.git", branch = "feature/support-my-egui-fork" }
+
+# Core
+tokio = { version = "1.43", features = [
+    "rt-multi-thread",
+    "macros",
+    "io-util",
+    "process",
+    "signal",
+] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"] }
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Utilities
+arboard = "3.4"
+image = "0.25"
+base64 = "0.22"
+regex = "1.11"
+sysinfo = "0.30"
+netstat2 = "0.9"
+toml = "0.8"
+dotenvy = "0.15"
+directories = "6.0"
+thiserror = "2.0"
+futures = "0.3"
+futures-util = "0.3"
+reqwest-eventsource = "0.6"
+
+# Audio
+cpal = "0.15"
+ringbuf = "0.3"
+rubato = "0.15"
+whisper-rs = "0.15"
+
+[patch.crates-io]
+egui = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers" }
+
+eframe = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers" }
+egui_commonmark = { git = "https://github.com/TonyMarkham/egui_commonmark.git", branch = "feature/use-fork-of-egui" }
+egui_extras = { git = "https://github.com/TonyMarkham/egui.git", branch = "feature/left-right-modifiers" }
+egui-twemoji = { git = "https://github.com/TonyMarkham/egui-twemoji.git", branch = "feature/support-my-egui-fork" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+
+[workspace]
+resolver = "2"

@@ -1,0 +1,4 @@
+[submodule "submodules/opencode"]
+	path = submodules/opencode
+	url = https://github.com/TonyMarkham/opencode.git
+	branch = feature/egui

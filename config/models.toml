@@ -1,0 +1,107 @@
+[[providers]]
+name = "openai"
+display_name = "OpenAI"
+api_key_env = "OPENAI_API_KEY"
+models_url = "https://api.openai.com/v1/models"
+auth_type = "bearer"
+
+[providers.extra_headers]
+
+[providers.response_format]
+models_path = "data"
+model_id_field = "id"
+model_name_field = "id"
+
+[[providers]]
+name = "anthropic"
+display_name = "Anthropic"
+api_key_env = "ANTHROPIC_API_KEY"
+models_url = "https://api.anthropic.com/v1/models"
+auth_type = "header"
+auth_header = "x-api-key"
+
+[providers.extra_headers]
+anthropic-version = "2023-06-01"
+
+[providers.response_format]
+models_path = "data"
+model_id_field = "id"
+model_name_field = "display_name"
+
+[[providers]]
+name = "google"
+display_name = "Google Gemini"
+api_key_env = "GOOGLE_API_KEY"
+models_url = "https://generativelanguage.googleapis.com/v1/models"
+auth_type = "query_param"
+auth_param = "key"
+
+[providers.extra_headers]
+
+[providers.response_format]
+models_path = "models"
+model_id_field = "name"
+model_id_strip_prefix = "models/"
+model_name_field = "displayName"
+
+[[providers]]
+name = "openrouter"
+display_name = "OpenRouter"
+api_key_env = "OPENROUTER_API_KEY"
+models_url = "https://openrouter.ai/api/v1/models"
+auth_type = "bearer"
+
+[providers.extra_headers]
+
+[providers.response_format]
+models_path = "data"
+model_id_field = "id"
+model_name_field = "name"
+
+[models]
+default_model = "openai/gpt-5.1-2025-11-13"
+
+[[models.curated]]
+name = "gpt-5.1-2025-11-13"
+provider = "openai"
+model_id = "gpt-5.1-2025-11-13"
+
+[[models.curated]]
+name = "gpt-5.1"
+provider = "openai"
+model_id = "gpt-5.1"
+
+[[models.curated]]
+name = "gpt-4o-mini"
+provider = "openai"
+model_id = "gpt-4o-mini"
+
+[[models.curated]]
+name = "Claude Sonnet 4.5"
+provider = "anthropic"
+model_id = "claude-sonnet-4-5-20250929"
+
+[[models.curated]]
+name = "Claude Sonnet 3.7"
+provider = "anthropic"
+model_id = "claude-3-7-sonnet-20250219"
+
+[[models.curated]]
+name = "Gemini 2.5 Pro"
+provider = "google"
+model_id = "gemini-2.5-pro"
+
+[[models.curated]]
+name = "Gemini 2.5 Flash"
+provider = "google"
+model_id = "gemini-2.5-flash"
+
+[[models.curated]]
+name = "MoonshotAI: Kimi K2 Thinking"
+provider = "openrouter"
+model_id = "moonshotai/kimi-k2-thinking"
+
+[[models.curated]]
+name = "gpt-5.2"
+provider = "openai"
+model_id = "gpt-5.2"

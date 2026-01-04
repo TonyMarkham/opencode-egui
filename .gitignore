@@ -1,0 +1,8 @@
+target/
+**/*.rs.bk
+
+# Local config cache
+.opencode-egui/
+
+# API keys (never commit!)
+.env

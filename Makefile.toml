@@ -1,0 +1,172 @@
+[tasks._setup-models]
+description = "Copy Whisper model to ${TARGET_DIR}/models (cross-platform)"
+script_runner = "@duckscript"
+script = '''
+# Resolve target directory from env or default to debug
+target_dir = get_env TARGET_DIR
+if is_empty ${target_dir}
+    target_dir = set "target/debug"
+end
+echo "TARGET_DIR=${target_dir}"
+model_dir = concat ${target_dir} "/models"
+
+# Allow overrides
+model_file = get_env WHISPER_MODEL_FILE
+if is_empty ${model_file}
+    model_file = set "ggml-base.en.bin"
+end
+explicit_path = get_env WHISPER_MODEL_PATH
+
+# Determine source path with priority:
+# 1) WHISPER_MODEL_PATH (explicit full path)
+# 2) ~/Downloads/<file> or %USERPROFILE%/Downloads/<file> (authoritative)
+# 3) target/debug/models/<file> (fallback)
+source_path = set ""
+
+if not is_empty ${explicit_path}
+    exists = is_path_exists ${explicit_path}
+    if ${exists}
+        source_path = set ${explicit_path}
+    end
+end
+
+if is_empty ${source_path}
+    home = get_env HOME
+    if is_empty ${home}
+        home = get_env USERPROFILE
+    end
+    dl_src = concat ${home} "/Downloads/" ${model_file}
+    exists = is_path_exists ${dl_src}
+    if ${exists}
+        source_path = set ${dl_src}
+    end
+end
+
+if is_empty ${source_path}
+    debug_src = concat "target/debug/models/" ${model_file}
+    exists = is_path_exists ${debug_src}
+    if ${exists}
+        source_path = set ${debug_src}
+    end
+end
+
+# Ensure destination dir
+mkdir ${model_dir}
+
+# Fail loudly if missing
+if is_empty ${source_path}
+    echo "❌ Whisper model not found. Looked for:"
+    echo "   1) WHISPER_MODEL_PATH"
+    echo "   2) target/debug/models/${model_file}"
+    echo "   3) ~/Downloads/${model_file}"
+    echo ""
+    echo "Fix one and rerun:"
+    echo "   - Set WHISPER_MODEL_PATH to the full file path"
+    echo "   - Place ${model_file} in target/debug/models or ~/Downloads"
+    echo "   - Or set audio.whisper_model_path in app config"
+    exit 1
+end
+
+# Copy
+target_path = concat ${model_dir} "/" ${model_file}
+echo "SOURCE_PATH=${source_path}"
+echo "Copying Whisper model from ${source_path}..."
+cp ${source_path} ${target_path}
+echo "✓ Model ready at ${target_path}"
+'''
+
+[tasks.setup-models]
+extend = "_setup-models"
+description = "Copy Whisper model (debug)"
+env = { TARGET_DIR = "target/debug" }
+
+[tasks.setup-models-release]
+extend = "_setup-models"
+description = "Copy Whisper model (release)"
+env = { TARGET_DIR = "target/release" }
+
+[tasks.setup-config-dev]
+description = "Copy .env (if exists) and config directory for development builds"
+script_runner = "@duckscript"
+script = '''
+target_dir = set "target/debug"
+
+# Copy .env if it exists (for dev builds with real API keys)
+env_file = set ".env"
+env_exists = is_path_exists ${env_file}
+if ${env_exists}
+    echo "Copying .env to ${target_dir}..."
+    cp ${env_file} ${target_dir}/.env
+    echo "✓ .env ready"
+else
+    echo "⚠️  No .env file found - copy .env.example to .env and add your API keys"
+    cp .env.example ${target_dir}/.env
+end
+
+# Always copy config directory (overwrite to get latest provider configs)
+echo "Copying config directory to ${target_dir}..."
+# Create config directory (mkdir is idempotent in duckscript)
+mkdir ${target_dir}/config
+# Remove old file if exists to force overwrite
+config_file = set "${target_dir}/config/models.toml"
+config_exists = is_path_exists ${config_file}
+if ${config_exists}
+    rm ${config_file}
+end
+# Copy fresh version
+cp config/models.toml ${config_file}
+echo "✓ config/ ready (updated)"
+'''
+
+[tasks.setup-config-release]
+description = "Copy .env.example and config directory for production builds"
+script_runner = "@duckscript"
+script = '''
+target_dir = set "target/release"
+
+# Copy .env.example for production builds (users fill in their own keys)
+echo "Copying .env.example to ${target_dir}..."
+cp .env.example ${target_dir}/.env.example
+echo "✓ .env.example ready (rename to .env and add your API keys)"
+
+# Always copy config directory (overwrite to get latest provider configs)
+echo "Copying config directory to ${target_dir}..."
+# Create config directory (mkdir is idempotent in duckscript)
+mkdir ${target_dir}/config
+# Remove old file if exists to force overwrite
+config_file = set "${target_dir}/config/models.toml"
+config_exists = is_path_exists ${config_file}
+if ${config_exists}
+    rm ${config_file}
+end
+# Copy fresh version
+cp config/models.toml ${config_file}
+echo "✓ config/ ready (updated)"
+'''
+
+[tasks.build]
+description = "Build the project (debug)"
+command = "cargo"
+args = ["build"]
+
+[tasks.build-release]
+description = "Build the project (release)"
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.dev]
+description = "Build and setup for development (does not run)"
+dependencies = ["build", "setup-models", "setup-config-dev"]
+
+[tasks.run]
+description = "Build, setup models, and run"
+dependencies = ["dev"]
+command = "cargo"
+args = ["run"]
+
+[tasks.release]
+description = "Build production release with config"
+dependencies = ["build-release", "setup-models-release", "setup-config-release"]
+
+[tasks.default]
+alias = "release"
